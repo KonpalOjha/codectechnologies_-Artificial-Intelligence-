@@ -1,0 +1,35 @@
+{
+  "metadata": {
+    "kernelspec": {
+      "name": "python",
+      "display_name": "Python (Pyodide)",
+      "language": "python"
+    },
+    "language_info": {
+      "codemirror_mode": {
+        "name": "python",
+        "version": 3
+      },
+      "file_extension": ".py",
+      "mimetype": "text/x-python",
+      "name": "python",
+      "nbconvert_exporter": "python",
+      "pygments_lexer": "ipython3",
+      "version": "3.8"
+    }
+  },
+  "nbformat_minor": 5,
+  "nbformat": 4,
+  "cells": [
+    {
+      "id": "c5815c6d-37c4-426e-81f5-78f9d52aa8cc",
+      "cell_type": "code",
+      "source": "# Import Libraries\nimport pandas as pd\nimport numpy as np\nimport matplotlib.pyplot as plt\nimport yfinance as yf\n\nfrom sklearn.model_selection import train_test_split\nfrom sklearn.linear_model import LinearRegression\nfrom sklearn.metrics import mean_squared_error, r2_score\n\n# Download Stock Data\n# Example: Apple stock (AAPL)\n\nstock_data = yf.download('AAPL', start='2020-01-01', end='2025-01-01')\n\n# Display first 5 rows\nprint(stock_data.head())\n\n# Use only Close price\ndata = stock_data[['Close']]\n\n# Create Prediction Column\n# Predict next day's closing price\n\ndata['Prediction'] = data[['Close']].shift(-1)\n\n# Remove last row with NaN value\ndata.dropna(inplace=True)\n\n# Features (X) and Labels (y)\nX = np.array(data[['Close']])\ny = np.array(data['Prediction'])\n\n# Split Data into Training and Testing\nX_train, X_test, y_train, y_test = train_test_split(\n    X, y, test_size=0.2, random_state=42\n)\n\n# Create Linear Regression Model\nmodel = LinearRegression()\n\n# Train Model\nmodel.fit(X_train, y_train)\n\n# Predictions\npredictions = model.predict(X_test)\n\n# Model Accuracy\nr2 = r2_score(y_test, predictions)\n\nprint(\"R2 Score:\", r2)\n\n# Mean Squared Error\nmse = mean_squared_error(y_test, predictions)\n\nprint(\"Mean Squared Error:\", mse)\n\n# Predict Next Day Price\nlast_close = np.array(data[['Close']].tail(1))\n\nnext_day_prediction = model.predict(last_close)\n\nprint(\"Predicted Next Day Closing Price:\", next_day_prediction[0])\n\n# Plot Actual vs Predicted Prices\n\nplt.figure(figsize=(10,5))\nplt.plot(y_test[:50], label='Actual Price')\nplt.plot(predictions[:50], label='Predicted Price')\nplt.xlabel('Days')\nplt.ylabel('Stock Price')\nplt.title('Actual vs Predicted Stock Prices')\nplt.legend()\nplt.show()",
+      "metadata": {
+        "trusted": true
+      },
+      "outputs": [],
+      "execution_count": null
+    }
+  ]
+}
